@@ -33,7 +33,6 @@
     font-family: Georgia, "Times New Roman", serif;
   }
 
-  /* Floating background flowers/hearts */
   .bgFloat{
     position:fixed; inset:0;
     pointer-events:none;
@@ -154,9 +153,7 @@
     opacity:0;
     pointer-events:none;
   }
-  .overlay.show .flash{
-    animation: flash 520ms ease;
-  }
+  .overlay.show .flash{ animation: flash 520ms ease; }
   @keyframes flash{
     0%{ opacity:0; }
     25%{ opacity:1; }
@@ -191,7 +188,6 @@
     opacity:.80;
     letter-spacing:.3px;
   }
-
   .love{
     margin:0;
     font-family: "Brush Script MT", "Segoe Script", cursive;
@@ -200,7 +196,6 @@
     color: var(--deep);
     text-shadow: 0 18px 70px rgba(255,61,141,.18);
   }
-
   .msg{
     margin: 10px auto 0;
     max-width: 70ch;
@@ -209,7 +204,6 @@
     line-height:1.75;
   }
 
-  /* Photo grid */
   .gallery{
     margin: 18px auto 6px;
     width:min(920px, 100%);
@@ -224,11 +218,6 @@
     border-radius: 18px;
     border: 1px solid rgba(255,61,141,.20);
     box-shadow: 0 16px 28px rgba(0,0,0,.10);
-    transition: transform .22s ease, filter .22s ease;
-  }
-  .gallery img:hover{
-    transform: translateY(-3px) scale(1.02);
-    filter: brightness(1.03);
   }
   @media (max-width: 860px){
     .gallery{ grid-template-columns: repeat(2, 1fr); }
@@ -249,7 +238,7 @@
     box-shadow: 0 12px 20px rgba(0,0,0,.08);
   }
 
-  /* hearts + flowers rain */
+  /* Rain (shared) */
   .rain{
     position:absolute; inset:0;
     pointer-events:none;
@@ -260,17 +249,17 @@
     font-style:normal;
     opacity:0;
     animation: fall linear forwards;
-    filter: drop-shadow(0 12px 18px rgba(255,61,141,.22));
+    filter: drop-shadow(0 12px 18px rgba(0,0,0,.20));
     will-change: transform, opacity;
   }
   @keyframes fall{
     0%{ transform: translateY(-12vh) translateX(0) rotate(0deg) scale(.95); opacity:0; }
     10%{ opacity:1; }
     90%{ opacity:1; }
-    100%{ transform: translateY(112vh) translateX(var(--dx)) rotate(var(--rot)) scale(1.18); opacity:0; }
+    100%{ transform: translateY(112vh) translateX(var(--dx)) rotate(var(--rot)) scale(1.15); opacity:0; }
   }
 
-  /* NO overlay (black screen + crying image) */
+  /* NO overlay (black screen + crying + rain) */
   .noOverlay{
     position:fixed; inset:0;
     display:none;
@@ -278,17 +267,18 @@
     z-index: 120;
     background: #000;
     opacity: 0;
-    transition: opacity 480ms ease;
+    transition: opacity 520ms ease;
+    overflow:hidden;
   }
-  .noOverlay.show{
-    display:grid;
-    opacity: 1;
-  }
+  .noOverlay.show{ display:grid; opacity: 1; }
+
   .noBox{
     width:min(780px, 92vw);
     text-align:center;
     color:#fff;
     padding: 26px 18px;
+    position:relative;
+    z-index: 2;
   }
   .noBox h2{
     margin: 12px 0 8px;
@@ -327,18 +317,18 @@
   <!-- YES overlay -->
   <section class="overlay" id="yesOverlay" onclick="overlayClick(event)" aria-modal="true" role="dialog">
     <div class="flash"></div>
-    <div class="rain" id="rain" aria-hidden="true"></div>
+    <div class="rain" id="yesRain" aria-hidden="true"></div>
 
     <div class="overlayCard">
       <p class="cheer">SHE SAID YES!!! 🥳💐🎉</p>
       <h2 class="love">I LOVE YOU</h2>
 
-      <!-- Your photos (make sure these exist in your GitHub repo) -->
+      <!-- Photos (JS will auto-pick .jpg or .jpeg) -->
       <div class="gallery">
-        <img src="images/1.jpg" alt="Megan photo 1">
-        <img src="images/2.jpg" alt="Megan photo 2">
-        <img src="images/3.jpg" alt="Megan photo 3">
-        <img src="images/4.jpg" alt="Megan photo 4">
+        <img id="pic1" alt="Photo 1">
+        <img id="pic2" alt="Photo 2">
+        <img id="pic3" alt="Photo 3">
+        <img id="pic4" alt="Photo 4">
       </div>
 
       <p class="msg">
@@ -352,7 +342,7 @@
       </p>
 
       <div class="actions">
-        <button onclick="moreRain()">More hearts & flowers 💞💐</button>
+        <button onclick="moreYesRain()">More hearts & flowers 💞💐</button>
         <button class="ghost" onclick="closeYes()">Close</button>
       </div>
     </div>
@@ -360,8 +350,9 @@
 
   <!-- NO overlay -->
   <section class="noOverlay" id="noOverlay">
+    <div class="rain" id="noRain" aria-hidden="true"></div>
+
     <div class="noBox">
-      <!-- Inline SVG crying image (no extra files needed) -->
       <svg width="140" height="140" viewBox="0 0 140 140" aria-label="crying face" role="img">
         <defs>
           <radialGradient id="g" cx="35%" cy="30%" r="70%">
@@ -373,7 +364,6 @@
         <circle cx="50" cy="60" r="6" fill="#1a1a1a"/>
         <circle cx="90" cy="60" r="6" fill="#1a1a1a"/>
         <path d="M45 92 Q70 78 95 92" fill="none" stroke="#1a1a1a" stroke-width="6" stroke-linecap="round"/>
-        <!-- tears -->
         <path d="M42 70 Q38 82 45 92 Q52 82 48 70" fill="#4aa3ff" opacity="0.9"/>
         <path d="M98 70 Q94 82 101 92 Q108 82 104 70" fill="#4aa3ff" opacity="0.9"/>
       </svg>
@@ -388,7 +378,7 @@
   </section>
 
 <script>
-  // --- Floating background flowers/hearts ---
+  // Floating background
   const bgFloat = document.getElementById("bgFloat");
   const BG_EMOJIS = ["🌸","🌹","💐","🌷","💕","💖","✨"];
   (function seedBG(){
@@ -406,7 +396,33 @@
     }
   })();
 
-  // --- NO logic: dodge first 4 times, on 5th show black crying screen ---
+  // --------- Image auto-loader (.jpg OR .jpeg) ----------
+  function setPhoto(imgEl, basePath){
+    const tryUrls = [basePath + ".jpg", basePath + ".jpeg", basePath + ".JPG", basePath + ".JPEG"];
+    let idx = 0;
+
+    function tryNext(){
+      if(idx >= tryUrls.length){
+        imgEl.alt = "Image not found (check filename in GitHub)";
+        imgEl.style.background = "rgba(0,0,0,.05)";
+        imgEl.style.objectFit = "contain";
+        return;
+      }
+      const url = tryUrls[idx++];
+      const test = new Image();
+      test.onload = () => { imgEl.src = url; };
+      test.onerror = tryNext;
+      test.src = url;
+    }
+    tryNext();
+  }
+
+  setPhoto(document.getElementById("pic1"), "images/1");
+  setPhoto(document.getElementById("pic2"), "images/2");
+  setPhoto(document.getElementById("pic3"), "images/3");
+  setPhoto(document.getElementById("pic4"), "images/4");
+
+  // --------- NO logic: dodge first 4, on 5th show black screen ----------
   const noBtn = document.getElementById("no");
   const row = document.getElementById("row");
   const noOverlay = document.getElementById("noOverlay");
@@ -415,13 +431,10 @@
   function dodgeNo(){
     const rowRect = row.getBoundingClientRect();
     const btnRect = noBtn.getBoundingClientRect();
-
     const pad = 8;
     const maxX = Math.max(pad, rowRect.width - btnRect.width - pad);
-
     let x = pad + Math.random() * maxX;
 
-    // avoid hanging too close to YES side
     const avoidLeft = rowRect.width * 0.46;
     if(x < avoidLeft) x = avoidLeft + (Math.random() * (rowRect.width - avoidLeft - btnRect.width - pad));
 
@@ -441,32 +454,26 @@
 
   function onNo(){
     noTries++;
-    if(noTries < 5){
-      dodgeNo();
-      return;
-    }
+    if(noTries < 5){ dodgeNo(); return; }
     showNo();
   }
 
-  function showNo(){
-    noOverlay.classList.add("show");
-  }
-
-  function closeNo(){
-    noOverlay.classList.remove("show");
-  }
-
-  // --- YES overlay + surprise rain (hearts + flowers) ---
+  // --------- Rain engines ----------
   const yesOverlay = document.getElementById("yesOverlay");
-  const rain = document.getElementById("rain");
-  const RAIN_EMOJIS = ["💖","💘","💕","💝","✨","🌹","🌸","💐","🌷"];
-  let rainTimer = null;
+  const yesRain = document.getElementById("yesRain");
+  const noRain = document.getElementById("noRain");
 
-  function spawnRain(){
+  const YES_EMOJIS = ["💖","💘","💕","💝","✨","🌹","🌸","💐","🌷"];
+  const NO_EMOJIS  = ["💧","💧","💧","😭","🖤","🥀","🌧️"];
+
+  let yesTimer = null;
+  let noTimer = null;
+
+  function spawn(rainEl, set){
     const i = document.createElement("i");
-    i.textContent = RAIN_EMOJIS[Math.floor(Math.random()*RAIN_EMOJIS.length)];
+    i.textContent = set[Math.floor(Math.random()*set.length)];
     const left = Math.random()*100;
-    const dur  = 2.4 + Math.random()*2.8;
+    const dur  = 2.3 + Math.random()*2.9;
     const size = 16 + Math.random()*30;
 
     i.style.left = left + "vw";
@@ -476,45 +483,72 @@
     i.style.setProperty("--rot", (Math.random()*180 - 90) + "deg");
     i.style.animationDuration = dur + "s";
 
-    rain.appendChild(i);
-    setTimeout(()=> i.remove(), dur*1000 + 400);
+    rainEl.appendChild(i);
+    setTimeout(()=> i.remove(), dur*1000 + 450);
   }
 
-  function startRain(ms=6200){
-    stopRain();
+  function startYesRain(ms=6500){
+    stopYesRain();
     const start = performance.now();
-    rainTimer = setInterval(() => {
-      spawnRain();
-      spawnRain();
-      if(Math.random() < 0.35) spawnRain();
-      if(performance.now() - start > ms) stopRain();
+    yesTimer = setInterval(() => {
+      spawn(yesRain, YES_EMOJIS);
+      spawn(yesRain, YES_EMOJIS);
+      if(Math.random()<0.35) spawn(yesRain, YES_EMOJIS);
+      if(performance.now() - start > ms) stopYesRain();
     }, 80);
   }
-  function stopRain(){
-    if(rainTimer) clearInterval(rainTimer);
-    rainTimer = null;
+  function stopYesRain(){
+    if(yesTimer) clearInterval(yesTimer);
+    yesTimer = null;
   }
 
+  function startNoRain(ms=5500){
+    stopNoRain();
+    const start = performance.now();
+    noTimer = setInterval(() => {
+      spawn(noRain, NO_EMOJIS);
+      if(Math.random()<0.5) spawn(noRain, NO_EMOJIS);
+      if(performance.now() - start > ms) stopNoRain();
+    }, 95);
+  }
+  function stopNoRain(){
+    if(noTimer) clearInterval(noTimer);
+    noTimer = null;
+  }
+
+  // --------- YES overlay controls ----------
   function onYes(){
     yesOverlay.classList.add("show");
-    // immediate burst for surprise
-    for(let k=0;k<45;k++) spawnRain();
-    startRain(6800);
+    for(let k=0;k<45;k++) spawn(yesRain, YES_EMOJIS);
+    startYesRain(7000);
   }
 
-  function moreRain(){
-    for(let k=0;k<20;k++) spawnRain();
-    startRain(5200);
+  function moreYesRain(){
+    for(let k=0;k<20;k++) spawn(yesRain, YES_EMOJIS);
+    startYesRain(5200);
   }
 
   function closeYes(){
     yesOverlay.classList.remove("show");
-    stopRain();
-    rain.innerHTML = "";
+    stopYesRain();
+    yesRain.innerHTML = "";
   }
 
   function overlayClick(e){
     if(e.target === yesOverlay) closeYes();
+  }
+
+  // --------- NO overlay controls ----------
+  function showNo(){
+    noOverlay.classList.add("show");
+    for(let k=0;k<25;k++) spawn(noRain, NO_EMOJIS);
+    startNoRain(6500);
+  }
+
+  function closeNo(){
+    noOverlay.classList.remove("show");
+    stopNoRain();
+    noRain.innerHTML = "";
   }
 
   window.addEventListener("keydown", (e) => {
